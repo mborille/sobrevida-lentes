@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sobrevida de Lentes e Laminados</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: foto grande à esquerda, painel de medição à direita; empilha no celular.
+   Linguagem: Apple (tipografia do sistema, superfícies agrupadas, controles segmentados, azul do sistema). */
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f2f2f7;
+  --line: rgba(60, 60, 67, 0.16);
+  --fg: #1d1d1f;
+  --fg-dim: #6e6e73;
+  --accent: #0071e3;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(0, 113, 227, 0.1);
+  --seg-thumb: #ffffff;
+  --card-c: #8e8e93;
+  --tooth-c: #ff9f0a;
+  --ref-c: #30b0c7;
+  --ok: #248a3d;
+  --warn: #b25000;
+  --bad: #d70015;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06);
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-data: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --line: rgba(84, 84, 88, 0.55);
+    --fg: #f5f5f7; --fg-dim: #98989d; --accent: #0a84ff; --accent-ink: #ffffff; --accent-soft: rgba(10, 132, 255, 0.2);
+    --seg-thumb: #636366; --card-c: #aeaeb2; --tooth-c: #ff9f0a; --ref-c: #64d2ff;
+    --ok: #30d158; --warn: #ff9f0a; --bad: #ff453a; --shadow: none;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --line: rgba(84, 84, 88, 0.55);
+  --fg: #f5f5f7; --fg-dim: #98989d; --accent: #0a84ff; --accent-ink: #ffffff; --accent-soft: rgba(10, 132, 255, 0.2);
+  --seg-thumb: #636366; --card-c: #aeaeb2; --tooth-c: #ff9f0a; --ref-c: #64d2ff;
+  --ok: #30d158; --warn: #ff9f0a; --bad: #ff453a; --shadow: none;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.47 var(--font-body); -webkit-font-smoothing: antialiased;
+  padding-block: 40px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1160px; margin: 0 auto; display: grid; gap: 24px; }
+header h1 { font: 700 40px/1.08 var(--font-display); letter-spacing: -0.022em; margin: 0 0 10px; text-wrap: balance; }
+header p { margin: 0; color: var(--fg-dim); font-size: 17px; line-height: 1.47; max-width: 56ch; }
+.example-banner {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  padding: 12px 16px; border-radius: 14px; color: var(--fg);
+  background: var(--accent-soft); font-size: 14px;
+}
+.example-banner[hidden] { display: none; }
+.app { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 880px) { .app { grid-template-columns: minmax(0, 1fr); } header h1 { font-size: 34px; } }
+.col { display: grid; gap: 20px; min-width: 0; }
+.panel { background: var(--surface); border-radius: 20px; padding: 22px; min-width: 0; box-shadow: var(--shadow); }
+.panel h2 { font: 600 19px/1.2 var(--font-display); letter-spacing: -0.012em; margin: 0 0 16px; color: var(--fg); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+button, .btn, select, input[type="text"], input[type="number"] {
+  font: inherit; color: var(--fg); background: var(--surface-2); border: 0;
+  border-radius: 10px; padding: 8px 14px; min-height: 40px;
+}
+button, .btn {
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--accent-soft); color: var(--accent); font-weight: 500; border-radius: 980px; padding: 8px 18px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+button:hover, .btn:hover { opacity: 0.82; }
+button:active, .btn:active { transform: scale(0.98); }
+button:focus-visible, .btn:focus-within, input:focus-visible, select:focus-visible, canvas:focus-visible, summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px;
+}
+button.primary { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.seg { display: flex; gap: 2px; padding: 2px; margin-bottom: 14px; background: var(--surface-2); border-radius: 11px; }
+.seg button {
+  flex: 1 1 0; min-width: 0; background: transparent; color: var(--fg); border-radius: 9px; padding: 7px 8px;
+  font-size: 14px; font-weight: 500; min-height: 34px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.seg button[aria-pressed="true"] { background: var(--seg-thumb); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.04); font-weight: 600; }
+.seg button:hover { opacity: 1; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.dot.card { background: var(--card-c); } .dot.tooth { background: var(--tooth-c); } .dot.ref { background: var(--ref-c); }
+.step { font-size: 12px; color: var(--fg-dim); font-weight: 500; }
+.stage { position: relative; background: #000; border-radius: 14px; overflow: hidden; }
+canvas#view { display: block; width: 100%; touch-action: none; cursor: crosshair; }
+.hint { margin: 12px 2px 0; color: var(--fg-dim); font-size: 14px; min-height: 20px; }
+.tips summary { cursor: pointer; font: 600 17px/1.3 var(--font-display); letter-spacing: -0.01em; list-style: none; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; }
+.tips summary::-webkit-details-marker { display: none; }
+.tips summary::after { content: "›"; font-size: 24px; color: var(--fg-dim); transition: transform 0.2s ease; }
+.tips details[open] summary::after { transform: rotate(90deg); }
+.tips ul { margin: 12px 0 0; padding-left: 18px; color: var(--fg-dim); font-size: 15px; }
+.tips li { margin: 5px 0; }
+
+.swatches { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sw { border-radius: 14px; overflow: hidden; background: var(--surface-2); }
+.sw .chip { height: 96px; background: var(--surface-2); }
+.sw .cap { padding: 8px 12px; font-size: 13px; color: var(--fg-dim); display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.sw .cap b { color: var(--fg); font-family: var(--font-data); font-weight: 500; font-size: 12px; }
+.de-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 20px 0 10px; }
+.de-num { font: 600 60px/1 var(--font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.de-unit { color: var(--fg-dim); font-size: 15px; font-weight: 500; }
+.pill { padding: 4px 12px; border-radius: 99px; font-size: 13px; font-weight: 600; background: color-mix(in srgb, currentColor 14%, transparent); }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); } .pill.none { color: var(--fg-dim); }
+.scale { position: relative; height: 6px; background: var(--surface-2); border-radius: 3px; margin: 8px 0 26px; }
+.scale .fill { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--fg-dim); }
+.scale .fill.ok { background: var(--ok); } .scale .fill.warn { background: var(--warn); } .scale .fill.bad { background: var(--bad); }
+.scale .tick { position: absolute; top: -3px; bottom: -3px; width: 2px; border-radius: 1px; background: var(--fg); opacity: 0.35; }
+.scale .tick span { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); font: 12px var(--font-body); color: var(--fg-dim); white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 9px 4px; border-bottom: 0.5px solid var(--line); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+th:first-child, td:first-child { text-align: left; }
+th { font: 500 12px var(--font-body); color: var(--fg-dim); }
+td { font: 15px var(--font-display); }
+td:first-child { color: var(--fg-dim); font-size: 14px; }
+ul.warns { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+ul.warns li { padding: 10px 12px 10px 34px; position: relative; background: var(--surface-2); font-size: 14px; border-radius: 12px; }
+ul.warns li::before { content: ""; position: absolute; left: 14px; top: 17px; width: 8px; height: 8px; border-radius: 50%; background: var(--warn); }
+ul.warns li.good::before { background: var(--ok); }
+.mono { font-family: var(--font-data); font-size: 12px; color: var(--fg-dim); }
+.fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.fields label, .field { display: grid; gap: 6px; font-size: 13px; color: var(--fg-dim); }
+.fields input, .field input, .field select { width: 100%; color: var(--fg); font-size: 16px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.row > * { min-width: 0; }
+input[type="range"] { width: 100%; accent-color: var(--accent); min-height: 40px; background: transparent; padding: 0; }
+input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px; }
+input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.note { color: var(--fg-dim); font-size: 13px; line-height: 1.45; margin: 12px 0 0; }
+textarea#csvBox { width: 100%; min-height: 92px; font: 12px/1.45 var(--font-data); color: var(--fg); background: var(--surface-2); border: 0; border-radius: 12px; padding: 12px; resize: vertical; margin-top: 12px; }
+figure.report { margin: 16px 0 0; }
+figure.report img { width: 100%; max-width: 420px; height: auto; border-radius: 12px; display: block; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12); }
+figure.report figcaption { color: var(--fg-dim); font-size: 13px; margin-top: 8px; }
+.empty { color: var(--fg-dim); font-size: 14px; margin: 0; }
+@media (prefers-reduced-motion: no-preference) { .scale .fill { transition: width 0.3s ease; } }
+@media (prefers-reduced-motion: reduce) { button, .btn, .tips summary::after { transition: none; } }
+
+.app { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr); }
+@media (max-width: 880px) { .app { grid-template-columns: minmax(0, 1fr); } }
+:root { --g1: #0071e3; --g2: #d4551a; --g3: #248a3d; --g4: #8e4ec6; --g5: #b8860b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --g1: #4aa3ff; --g2: #ff8a50; --g3: #4cd964; --g4: #c08cf0; --g5: #e6b800; } }
+:root[data-theme="dark"] { --g1: #4aa3ff; --g2: #ff8a50; --g3: #4cd964; --g4: #c08cf0; --g5: #e6b800; }
+textarea { width: 100%; box-sizing: border-box; font: 13px/1.5 var(--font-data); padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); resize: vertical; }
+.fields.two { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 14px; align-items: end; }
+@media (max-width: 520px) { .fields.two { grid-template-columns: minmax(0, 1fr); } }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.check { display: flex; gap: 10px; align-items: center; font-size: 14px; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--fg-dim); margin: 0 0 8px; }
+.legend i { display: inline-block; width: 16px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+#chart svg { width: 100%; height: auto; display: block; }
+#chart text { font: 11px var(--font-body); fill: var(--fg-dim); }
+#chart .grid { stroke: var(--line); stroke-width: 1; }
+#chart .ax { stroke: var(--fg-dim); stroke-width: 1; }
+#resTab td, #resTab th, #riskTab td, #riskTab th { padding: 8px 6px; white-space: normal; text-align: left; font-size: 13px; vertical-align: top; font-variant-numeric: tabular-nums; }
+#riskTab { margin-top: 10px; } #riskTab td, #riskTab th { text-align: right; } #riskTab td:first-child, #riskTab th:first-child { text-align: left; font-weight: 600; }
+#resTab td:first-child { font-weight: 600; }
+.empty[hidden] { display: none; } .hint:empty { display: none; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Sobrevida de Lentes e Laminados</h1>
+    <p>Cole os seus casos (grupo, data da cimentação, data da falha ou da última revisão) e veja a curva de Kaplan-Meier com intervalo de confiança, a sobrevida em 1, 2, 3, 5 e 10 anos, a mediana de seguimento e a comparação entre grupos pelo teste log-rank.</p>
+  </header>
+
+  <div class="banner" role="note"><span><strong>Ferramenta de estudo, sem identificação de paciente.</strong> Use códigos, nunca nomes. Os dados ficam no seu navegador e não são enviados a servidor. Com poucos casos ou poucas falhas as curvas ficam instáveis e o app avisa. Os resultados não substituem a análise por estatístico em um estudo formal.</span></div>
+
+  <div class="app">
+    <div class="col">
+      <section class="panel" aria-labelledby="h-dados">
+        <h2 id="h-dados">1. Casos</h2>
+        <p class="note" style="margin-top:-6px">Uma linha por restauração: <b>grupo; início; fim; falha</b>. Datas em AAAA-MM-DD ou DD/MM/AAAA. Falha é 1 (ou sim) quando houve falha e 0 (ou não) quando a restauração segue sem falha. Fim em branco usa a data da análise. Tempo direto em meses: <b>grupo; 0; 18,5; 1</b>.</p>
+        <textarea id="data" rows="12" spellcheck="false" aria-label="Casos" placeholder="grupo;inicio;fim;falha&#10;Dissilicato;2019-03-12;2022-08-01;1&#10;Dissilicato;2019-04-02;;0&#10;Feldspática;2018-11-20;2020-02-15;0"></textarea>
+        <div class="fields two">
+          <label for="asof">Data da análise<input id="asof" type="text" autocomplete="off" placeholder="AAAA-MM-DD"></label>
+          <label for="fdef">Definição de falha<input id="fdef" type="text" autocomplete="off" value="fratura, descolamento ou substituição"></label>
+        </div>
+        <div class="btnrow" style="margin-top:12px">
+          <button type="button" id="btnRun">Analisar</button>
+          <button type="button" id="btnEx">Carregar exemplo fictício</button>
+          <button type="button" id="btnClr">Limpar</button>
+        </div>
+        <p class="note" id="status" role="status"></p>
+        <ul class="warns" id="errs"></ul>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="panel" aria-labelledby="h-curva">
+        <h2 id="h-curva">2. Curva de sobrevida</h2>
+        <p class="note" id="exBanner" hidden><b>Dados fictícios de exemplo.</b> Gerados por sorteio só para demonstrar o app. Não representam nenhum material real.</p>
+        <div id="legend" class="legend"></div>
+        <div id="chart"></div>
+        <label class="check" style="margin-top:8px"><input type="checkbox" id="chkCi" checked> Mostrar intervalo de confiança de 95%</label>
+        <div class="tablewrap"><table id="riskTab"></table></div>
+        <p class="note" id="riskNote" hidden>Linha de baixo: número de restaurações ainda em seguimento em cada ano.</p>
+        <p class="empty" id="empty">Cole os casos e toque em Analisar.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-res" id="resPanel" hidden>
+        <h2 id="h-res">3. Resultados</h2>
+        <div class="tablewrap"><table id="resTab"></table></div>
+        <p id="lr" class="note"></p>
+        <ul class="warns" id="warns"></ul>
+        <div class="btnrow" style="margin-top:14px">
+          <button type="button" id="btnCopy">Copiar resumo</button>
+          <button type="button" id="btnCsv">Copiar curva (CSV)</button>
+        </div>
+        <p class="hint" id="copyMsg" role="status"></p>
+      </section>
+
+      <section class="panel tips">
+        <details><summary>Como o cálculo funciona e limites</summary>
+          <ul>
+            <li>Kaplan-Meier: a cada falha, a sobrevida é multiplicada pela fração das restaurações em risco que continuaram sem falha. Restaurações sem falha na última revisão entram como censura e saem do risco sem derrubar a curva.</li>
+            <li>O intervalo de 95% usa a variância de Greenwood na escala log-log, que respeita os limites de 0 a 100%.</li>
+            <li>O log-rank compara as curvas dos grupos pelo número de falhas observadas contra o esperado se os grupos fossem iguais. O valor de p informa compatibilidade com igualdade, não o tamanho do efeito.</li>
+            <li>Mediana de seguimento: método de Kaplan-Meier reverso (as censuras viram eventos), a forma recomendada para descrever o tempo de acompanhamento.</li>
+            <li>A análise supõe que a censura não tem relação com o risco de falha. Pacientes que somem depois de um problema, ou que só voltam quando algo deu errado, quebram essa hipótese.</li>
+            <li>Várias lentes no mesmo paciente não são independentes. Este app trata cada restauração como independente e não corrige por agrupamento; em estudo formal use um modelo com fragilidade ou variância robusta.</li>
+            <li>Os métodos foram conferidos contra um conjunto clássico (leucemia, 6-MP contra placebo) nos testes do pacote: Kaplan-Meier e qui-quadrado do log-rank batem com os valores publicados.</li>
+          </ul>
+        </details>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+"use strict";
+// ---------- Núcleo: análise de sobrevida (Kaplan-Meier, IC log-log, log-rank) ----------
+var MONTH_DAYS = 30.4375;
+function parseDate(s) {
+  s = String(s).trim(); var m;
+  if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s))) return mk(+m[1], +m[2], +m[3]);
+  if ((m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s))) return mk(+m[3], +m[2], +m[1]);
+  return null;
+}
+function mk(y, mo, d) { var t = Date.UTC(y, mo - 1, d); var D = new Date(t); return (D.getUTCFullYear() === y && D.getUTCMonth() === mo - 1 && D.getUTCDate() === d) ? t : null; }
+function parseEvent(s) {
+  var v = String(s).trim().toLowerCase();
+  if (['1', 'sim', 's', 'y', 'yes', 'falha', 'fracasso', 'evento'].indexOf(v) >= 0) return 1;
+  if (['0', 'nao', 'não', 'n', 'no', 'censura', 'censurado', 'ok', ''].indexOf(v) >= 0) return 0;
+  return null;
+}
+// texto: colunas separadas por ; , tab. Colunas: grupo, inicio, fim, falha. Cabeçalho opcional.
+// Se 'inicio' e 'fim' forem números, 'fim' é o tempo de seguimento em meses.
+function parseData(text, asOfMs) {
+  var rows = [], errors = [], lines = String(text).split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    var ln = lines[i].trim(); if (!ln) continue;
+    var parts = ln.split(/[;\t]/.test(ln) ? /[;\t]/ : ',').map(function (x) { return x.trim(); });
+    if (/^(grupo|group)/i.test(parts[0]) && isNaN(parseFloat(parts[1]))) continue;
+    if (parts.length < 4) { errors.push('Linha ' + (i + 1) + ': esperado grupo; início; fim; falha.'); continue; }
+    var g = parts[0] || 'Todos', ev = parseEvent(parts[3]);
+    if (ev === null) { errors.push('Linha ' + (i + 1) + ': "falha" deve ser 1/0 ou sim/não.'); continue; }
+    var t = null;
+    var d0 = parseDate(parts[1]), d1 = parts[2] === '' ? asOfMs : parseDate(parts[2]);
+    if (d0 !== null && d1 !== null) t = (d1 - d0) / 86400000 / MONTH_DAYS;
+    else if (/^\d+([.,]\d+)?$/.test(parts[2]) && (parts[1] === '' || parts[1] === '0')) t = parseFloat(parts[2].replace(',', '.'));
+    if (t === null || !isFinite(t)) { errors.push('Linha ' + (i + 1) + ': datas inválidas (use AAAA-MM-DD ou DD/MM/AAAA).'); continue; }
+    if (t < 0) { errors.push('Linha ' + (i + 1) + ': fim antes do início.'); continue; }
+    rows.push({ g: g, t: t, e: ev });
+  }
+  return { rows: rows, errors: errors };
+}
+// Kaplan-Meier com IC log-log (95%)
+function km(times, events, z) {
+  z = z || 1.959964;
+  var n = times.length, idx = []; for (var i = 0; i < n; i++) idx.push(i);
+  idx.sort(function (a, b) { return times[a] - times[b]; });
+  var steps = [{ t: 0, s: 1, lo: 1, hi: 1, atRisk: n, d: 0, c: 0 }], S = 1, gw = 0, atRisk = n, p = 0;
+  while (p < n) {
+    var t = times[idx[p]], d = 0, c = 0, q = p;
+    while (q < n && times[idx[q]] === t) { if (events[idx[q]]) d++; else c++; q++; }
+    if (d > 0) {
+      S *= 1 - d / atRisk;
+      if (atRisk > d) gw += d / (atRisk * (atRisk - d));
+      var lo = S, hi = S;
+      if (S > 0 && S < 1 && gw > 0) { var se = Math.sqrt(gw) / Math.abs(Math.log(S)); lo = Math.pow(S, Math.exp(z * se)); hi = Math.pow(S, Math.exp(-z * se)); }
+      else if (S === 0) { lo = 0; hi = 0; }
+      steps.push({ t: t, s: S, lo: lo, hi: hi, atRisk: atRisk, d: d, c: c });
+    } else steps.push({ t: t, s: S, lo: steps[steps.length - 1].lo, hi: steps[steps.length - 1].hi, atRisk: atRisk, d: 0, c: c, cens: true });
+    atRisk -= d + c; p = q;
+  }
+  return steps;
+}
+function at(steps, t) { var r = steps[0]; for (var i = 0; i < steps.length; i++) { if (steps[i].t <= t) r = steps[i]; else break; } return r; }
+function atRiskAt(times, t) { var k = 0; for (var i = 0; i < times.length; i++) if (times[i] >= t) k++; return k; }
+function median(steps) { for (var i = 0; i < steps.length; i++) if (steps[i].s <= 0.5 && steps[i].t > 0) return steps[i].t; return null; }
+// gama incompleta regularizada para p-valor do qui-quadrado
+function gammaln(x) { var c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5], y = x, t = x + 5.5; t -= (x + 0.5) * Math.log(t); var s = 1.000000000190015; for (var j = 0; j < 6; j++) s += c[j] / ++y; return -t + Math.log(2.5066282746310005 * s / x); }
+function gammaQ(a, x) {
+  if (x <= 0) return 1;
+  if (x < a + 1) { var ap = a, sum = 1 / a, del = sum; for (var n = 0; n < 500; n++) { ap++; del *= x / ap; sum += del; if (Math.abs(del) < Math.abs(sum) * 1e-14) break; } return 1 - sum * Math.exp(-x + a * Math.log(x) - gammaln(a)); }
+  var b = x + 1 - a, c = 1e300, d = 1 / b, h = d;
+  for (var i = 1; i < 500; i++) { var an = -i * (i - a); b += 2; d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300; c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; var del2 = d * c; h *= del2; if (Math.abs(del2 - 1) < 1e-14) break; }
+  return Math.exp(-x + a * Math.log(x) - gammaln(a)) * h;
+}
+function chi2p(x, df) { return gammaQ(df / 2, x / 2); }
+function solve(A, b) {
+  var n = b.length, M = A.map(function (r, i) { return r.slice().concat([b[i]]); });
+  for (var c = 0; c < n; c++) {
+    var piv = c; for (var r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[piv][c])) piv = r;
+    var tmp = M[c]; M[c] = M[piv]; M[piv] = tmp; if (Math.abs(M[c][c]) < 1e-12) return null;
+    for (var r2 = 0; r2 < n; r2++) if (r2 !== c) { var f = M[r2][c] / M[c][c]; for (var k = c; k <= n; k++) M[r2][k] -= f * M[c][k]; }
+  }
+  return M.map(function (r, i) { return r[n] / r[i]; });
+}
+// groups: lista de {times, events}
+function logrank(groups) {
+  var k = groups.length; if (k < 2) return null;
+  var all = []; groups.forEach(function (g, gi) { g.times.forEach(function (t, i) { all.push({ t: t, e: g.events[i], g: gi }); }); });
+  var ts = {}; all.forEach(function (r) { if (r.e) ts[r.t] = 1; });
+  var times = Object.keys(ts).map(Number).sort(function (a, b) { return a - b; });
+  var O = new Array(k).fill(0), E = new Array(k).fill(0), V = []; for (var a = 0; a < k; a++) V.push(new Array(k).fill(0));
+  times.forEach(function (t) {
+    var nj = new Array(k).fill(0), dj = new Array(k).fill(0), n = 0, d = 0;
+    all.forEach(function (r) { if (r.t >= t) { nj[r.g]++; n++; } if (r.t === t && r.e) { dj[r.g]++; d++; } });
+    for (var j = 0; j < k; j++) { O[j] += dj[j]; E[j] += d * nj[j] / n; }
+    if (n > 1) { var f = d * (n - d) / (n - 1); for (var j2 = 0; j2 < k; j2++) for (var l = 0; l < k; l++) V[j2][l] += f * ((j2 === l ? nj[j2] / n : 0) - nj[j2] * nj[l] / (n * n)); }
+  });
+  var U = [], Vs = []; for (var j3 = 0; j3 < k - 1; j3++) { U.push(O[j3] - E[j3]); Vs.push(V[j3].slice(0, k - 1)); }
+  var x = solve(Vs, U); if (!x) return { chi2: null, df: k - 1, p: null, O: O, E: E };
+  var chi = 0; for (var q = 0; q < U.length; q++) chi += U[q] * x[q];
+  return { chi2: chi, df: k - 1, p: chi2p(chi, k - 1), O: O, E: E };
+}
+function analyse(rows) {
+  var names = [], by = {};
+  rows.forEach(function (r) { if (!by[r.g]) { by[r.g] = { name: r.g, times: [], events: [] }; names.push(r.g); } by[r.g].times.push(r.t); by[r.g].events.push(r.e); });
+  var groups = names.map(function (n) {
+    var g = by[n]; g.steps = km(g.times, g.events); g.n = g.times.length; g.fail = g.events.reduce(function (a, b) { return a + b; }, 0);
+    g.median = median(g.steps); g.maxT = Math.max.apply(null, g.times); g.medFollow = medFollow(g);
+    return g;
+  });
+  return { groups: groups, lr: groups.length > 1 ? logrank(groups) : null };
+}
+// mediana do seguimento pelo método de Kaplan-Meier reverso (censura vira evento)
+function medFollow(g) { var rev = km(g.times, g.events.map(function (e) { return e ? 0 : 1; })); return median(rev); }
+function fmtP(p) { if (p === null || p === undefined) return 'n/d'; return p < 0.001 ? '< 0,001' : p.toFixed(3).replace('.', ','); }
+
+// ---------- Interface ----------
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+function svg(tag, attrs, txt) { var e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (txt !== undefined) e.textContent = txt; return e; }
+function f1(x) { return (Math.round(x * 10) / 10).toFixed(1).replace('.', ','); }
+function pct(x) { return Math.round(x * 100) + '%'; }
+var COLORS = ['var(--g1)', 'var(--g2)', 'var(--g3)', 'var(--g4)', 'var(--g5)'];
+var HORIZ = [12, 24, 36, 60, 120];
+var last = null;
+
+function todayStr() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+// exemplo fictício determinístico
+function sampleText() {
+  var seed = 12345; function rnd() { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+  var L = ['grupo;inicio;fim;falha'], asOf = Date.UTC(2026, 9, 1);
+  function iso(ms) { var d = new Date(ms); return d.getUTCFullYear() + '-' + ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2); }
+  [['Grupo A', 0.006, 38], ['Grupo B', 0.016, 38]].forEach(function (g) {
+    for (var i = 0; i < g[2]; i++) {
+      var start = Date.UTC(2017, 0, 1) + Math.floor(rnd() * 8 * 365) * 86400000;
+      var tFail = -Math.log(1 - rnd()) / g[1] * MONTH_DAYS * 86400000;
+      var maxT = asOf - start, lost = rnd() < 0.15 ? rnd() * maxT : Infinity;
+      var tEnd = Math.min(tFail, maxT, lost), ev = tEnd === tFail ? 1 : 0;
+      L.push(g[0] + ';' + iso(start) + ';' + (ev || lost < maxT ? iso(start + tEnd) : '') + ';' + ev);
+    }
+  });
+  return L.join('\n');
+}
+function run() {
+  var asOfMs = parseDate($('asof').value.trim()) ;
+  var errs = $('errs'); errs.textContent = ''; $('status').textContent = '';
+  if (asOfMs === null) { $('status').textContent = 'Informe a data da análise (AAAA-MM-DD).'; return; }
+  var p = parseData($('data').value, asOfMs);
+  p.errors.slice(0, 8).forEach(function (e) { errs.appendChild(el('li', '', e)); });
+  if (p.errors.length > 8) errs.appendChild(el('li', '', '... e mais ' + (p.errors.length - 8) + ' linhas com erro.'));
+  if (!p.rows.length) { last = null; draw(); $('status').textContent = 'Nenhuma linha válida.'; return; }
+  var a = analyse(p.rows); if (a.groups.length > 5) { $('status').textContent = 'Use no máximo 5 grupos.'; return; }
+  last = a; $('status').textContent = p.rows.length + ' restaurações em ' + a.groups.length + ' grupo(s).';
+  draw();
+}
+function draw() {
+  var has = !!last; $('empty').hidden = has; $('resPanel').hidden = !has; $('riskNote').hidden = !has;
+  $('chart').textContent = ''; $('legend').textContent = ''; $('riskTab').textContent = '';
+  if (!has) return;
+  var G = last.groups, showCi = $('chkCi').checked;
+  var maxT = Math.max.apply(null, G.map(function (g) { return g.maxT; })), xMaxY = Math.max(1, Math.ceil(maxT / 12));
+  var W = 640, H = 340, ml = 46, mr = 14, mt = 12, mb = 34, pw = W - ml - mr, ph = H - mt - mb;
+  var minS = 1; G.forEach(function (g) { g.steps.forEach(function (s) { var v = showCi ? s.lo : s.s; if (v < minS) minS = v; }); });
+  var yMin = Math.max(0, Math.floor((minS - 0.02) * 10) / 10); if (yMin > 0.9) yMin = 0.9;
+  function X(m) { return ml + m / (xMaxY * 12) * pw; } function Y(s) { return mt + (1 - (s - yMin) / (1 - yMin)) * ph; }
+  var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Curvas de Kaplan-Meier por grupo' });
+  for (var v = yMin; v <= 1.0001; v += 0.1) { s.appendChild(svg('line', { x1: ml, x2: W - mr, y1: Y(v), y2: Y(v), 'class': 'grid' })); s.appendChild(svg('text', { x: ml - 6, y: Y(v) + 4, 'text-anchor': 'end' }, pct(v))); }
+  var step = xMaxY > 12 ? 2 : 1; for (var yr = 0; yr <= xMaxY; yr += step) { s.appendChild(svg('text', { x: X(yr * 12), y: H - 12, 'text-anchor': 'middle' }, yr + (yr === 0 ? '' : ''))); }
+  s.appendChild(svg('text', { x: ml + pw / 2, y: H - 0, 'text-anchor': 'middle' }, 'anos desde a cimentação'));
+  s.appendChild(svg('line', { x1: ml, x2: ml, y1: mt, y2: mt + ph, 'class': 'ax' })); s.appendChild(svg('line', { x1: ml, x2: W - mr, y1: mt + ph, y2: mt + ph, 'class': 'ax' }));
+  G.forEach(function (g, gi) {
+    var col = COLORS[gi], st = g.steps, d = '', band = '', top = [], bot = [];
+    for (var i = 0; i < st.length; i++) {
+      var x = X(st[i].t), yPrev = i ? Y(st[i - 1].s) : Y(1);
+      d += (i ? 'L' + x + ' ' + yPrev + ' L' + x + ' ' + Y(st[i].s) : 'M' + x + ' ' + Y(st[i].s)) + ' ';
+      if (i) { top.push([x, Y(st[i - 1].hi)]); bot.push([x, Y(st[i - 1].lo)]); }
+      top.push([x, Y(st[i].hi)]); bot.push([x, Y(st[i].lo)]);
+    }
+    var xe = X(g.maxT); d += 'L' + xe + ' ' + Y(st[st.length - 1].s); top.push([xe, Y(st[st.length - 1].hi)]); bot.push([xe, Y(st[st.length - 1].lo)]);
+    if (showCi) s.appendChild(svg('path', { d: 'M' + top.map(function (p) { return p[0] + ' ' + p[1]; }).join(' L') + ' L' + bot.reverse().map(function (p) { return p[0] + ' ' + p[1]; }).join(' L') + ' Z', fill: col, 'fill-opacity': '0.14', stroke: 'none' }));
+    s.appendChild(svg('path', { d: d, fill: 'none', stroke: col, 'stroke-width': 2.2, 'stroke-linejoin': 'round' }));
+    g.times.forEach(function (t, k) { if (!g.events[k]) { var sv = at(g.steps, t).s; s.appendChild(svg('line', { x1: X(t), x2: X(t), y1: Y(sv) - 4, y2: Y(sv) + 4, stroke: col, 'stroke-width': 1.4 })); } });
+    var lg = el('span'); var i2 = el('i'); i2.style.background = col; lg.appendChild(i2); lg.appendChild(document.createTextNode(g.name + ' (n=' + g.n + ', falhas=' + g.fail + ')')); $('legend').appendChild(lg);
+  });
+  $('chart').appendChild(s);
+  // tabela de risco
+  var th = el('thead'), tr = el('tr'); tr.appendChild(el('th', '', 'Em risco')); for (var y2 = 0; y2 <= xMaxY; y2 += step) tr.appendChild(el('th', '', y2 + ' a')); th.appendChild(tr); $('riskTab').appendChild(th);
+  var tb = el('tbody'); G.forEach(function (g) { var r = el('tr'); r.appendChild(el('td', '', g.name)); for (var y3 = 0; y3 <= xMaxY; y3 += step) r.appendChild(el('td', '', String(atRiskAt(g.times, y3 * 12)))); tb.appendChild(r); }); $('riskTab').appendChild(tb);
+  // resultados
+  var rt = $('resTab'); rt.textContent = '';
+  var h = el('thead'), hr = el('tr'); ['Grupo', 'n', 'Falhas'].concat(HORIZ.map(function (m) { return (m / 12) + ' a'; })).concat(['Mediana de sobrevida', 'Seguimento mediano']).forEach(function (t) { hr.appendChild(el('th', '', t)); }); h.appendChild(hr); rt.appendChild(h);
+  var b = el('tbody');
+  G.forEach(function (g) {
+    var r = el('tr'); r.appendChild(el('td', '', g.name)); r.appendChild(el('td', '', String(g.n))); r.appendChild(el('td', '', String(g.fail)));
+    HORIZ.forEach(function (m) { if (m > g.maxT) r.appendChild(el('td', '', 'sem dados')); else { var a = at(g.steps, m); r.appendChild(el('td', '', Math.round(a.s * 100) + '% (' + Math.round(a.lo * 100) + ' a ' + Math.round(a.hi * 100) + ')')); } });
+    r.appendChild(el('td', '', g.median === null ? 'não atingida' : f1(g.median / 12) + ' anos'));
+    r.appendChild(el('td', '', g.medFollow === null ? 'n/d' : f1(g.medFollow / 12) + ' anos')); b.appendChild(r);
+  }); rt.appendChild(b);
+  var lr = last.lr; $('lr').textContent = lr ? ('Log-rank: qui-quadrado ' + (lr.chi2 === null ? 'n/d' : f1(lr.chi2).replace(',', ',')) + ' com ' + lr.df + ' grau(s) de liberdade, p ' + (lr.p !== null && lr.p < 0.001 ? '' : '= ') + fmtP(lr.p) + '. Teste de igualdade entre as curvas, não mede o tamanho da diferença.') : 'Um grupo só: sem comparação.';
+  var w = $('warns'); w.textContent = ''; var W2 = [];
+  G.forEach(function (g) {
+    if (g.n < 10) W2.push(g.name + ': só ' + g.n + ' restaurações. A curva deste grupo é muito instável.');
+    if (g.fail < 5) W2.push(g.name + ': ' + g.fail + ' falha(s). Com tão poucas falhas o intervalo de confiança é largo e o p do log-rank não é confiável.');
+    if (g.maxT < 12) W2.push(g.name + ': seguimento máximo de ' + f1(g.maxT) + ' meses, menos de 1 ano.');
+  });
+  var ev0 = G.reduce(function (a, g) { return a + g.fail; }, 0); if (ev0 === 0) W2.push('Nenhuma falha registrada: a curva fica em 100% e o intervalo não é informativo.');
+  W2.push('Falha definida como: ' + ($('fdef').value || 'não informada') + '. Restaurações do mesmo paciente são tratadas como independentes.');
+  W2.forEach(function (t) { w.appendChild(el('li', '', t)); });
+}
+function summary() {
+  if (!last) return '';
+  var L = ['Sobrevida de restaurações (Kaplan-Meier). Falha: ' + $('fdef').value + '. Análise em ' + $('asof').value + '.'];
+  last.groups.forEach(function (g) {
+    var parts = []; HORIZ.forEach(function (m) { if (m <= g.maxT) { var a = at(g.steps, m); parts.push((m / 12) + ' a: ' + Math.round(a.s * 100) + '% (IC95% ' + Math.round(a.lo * 100) + ' a ' + Math.round(a.hi * 100) + ')'); } });
+    L.push(g.name + ': n=' + g.n + ', falhas=' + g.fail + '; ' + parts.join('; ') + '; seguimento mediano ' + (g.medFollow === null ? 'n/d' : f1(g.medFollow / 12) + ' anos') + '.');
+  });
+  if (last.lr) L.push('Log-rank: qui-quadrado ' + f1(last.lr.chi2) + ', gl ' + last.lr.df + ', p ' + fmtP(last.lr.p) + '.');
+  L.push('Ferramenta de estudo; restaurações do mesmo paciente tratadas como independentes.'); return L.join('\n');
+}
+function csv() {
+  var L = ['grupo;meses;sobrevida;ic_inf;ic_sup;em_risco'];
+  last.groups.forEach(function (g) { g.steps.forEach(function (s) { L.push([g.name, f1(s.t).replace(',', '.'), s.s.toFixed(4), s.lo.toFixed(4), s.hi.toFixed(4), s.atRisk].join(';')); }); });
+  return L.join('\n');
+}
+function copy(t, ok) {
+  var msg = $('copyMsg');
+  function fb() { var a = el('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); msg.textContent = ok; } catch (e) { msg.textContent = 'Não foi possível copiar.'; } a.remove(); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { msg.textContent = ok; }, fb); else fb();
+}
+function init() {
+  $('asof').value = todayStr();
+  $('btnRun').onclick = function () { $('exBanner').hidden = true; run(); };
+  $('btnEx').onclick = function () { $('data').value = sampleText(); $('asof').value = '2026-10-01'; run(); $('exBanner').hidden = false; };
+  $('btnClr').onclick = function () { $('data').value = ''; last = null; $('errs').textContent = ''; $('status').textContent = ''; $('exBanner').hidden = true; draw(); };
+  $('chkCi').onchange = draw;
+  $('btnCopy').onclick = function () { copy(summary(), 'Resumo copiado.'); };
+  $('btnCsv').onclick = function () { copy(csv(), 'Curva copiada.'); };
+  draw();
+}
+init();
+
+})();
+</script>
+</body>
+</html>
