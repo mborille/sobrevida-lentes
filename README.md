@@ -1,5 +1,7 @@
 # Sobrevida de Lentes e Laminados (sobrevida-lentes)
 
+Abrir no navegador: [mborille.github.io/sobrevida-lentes/sobrevida-lentes.html](https://mborille.github.io/sobrevida-lentes/sobrevida-lentes.html)
+
 Recebe os casos do próprio usuário (grupo, data da cimentação, data da falha ou da última revisão, falha sim ou não) e calcula a curva de Kaplan-Meier com intervalo de confiança de 95%, a sobrevida em 1, 2, 3, 5 e 10 anos, o seguimento mediano e a comparação entre grupos pelo teste log-rank. Tudo no navegador, sem enviar dados a servidor.
 
 ## Arquivos
